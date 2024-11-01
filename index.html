@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta name="keywords" content="Programming Quotes, Developer Quotes, Inspirational Quotes, Code, Motivation, Random Quotes">
+
+<meta name="description" content="Inspire and motivate yourself with random programming quotes. Click the button to generate a new quote and discover your favorite sayings from the coding world. Perfect for developers and tech enthusiasts!">
+
+  <meta name="author" content="Anya">
+  <title>Programming Quote Generator</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      transition: background-color 0.3s;
+    }
+    .quote-box {
+      transition: opacity 0.5s ease-in-out;
+    }
+    .hidden { display: none; }
+    .favorite {
+      color: gray;
+      cursor: pointer;
+    }
+    .favorite.active {
+      color: red;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+
+  <div id="loadingScreen" class="flex flex-col items-center justify-center w-full h-full absolute bg-white">
+    <img src="https://img.icons8.com/?size=100&id=PgXLzV9zDcSS&format=png&color=000000" alt="Loading Icon" class="animate-spin mb-4">
+  
+  </div>
+
+
+  <div id="welcomeScreen" class="hidden flex flex-col items-center justify-center w-full h-full absolute bg-white">
+    <h1 class="text-black text-center text-3xl font-bold mb-4">Welcome to Programming Quotes</h1>
+    <button onclick="hideWelcomeScreen()" class="bg-gradient-to-r from-pink-500 to-purple-500 text-white font-semibold py-2 px-6 rounded hover:from-pink-600 hover:to-purple-600 transition duration-300">Enter</button>
+  </div>
+
+  <div id="quoteScreen" class="hidden flex flex-col items-center justify-center text-center">
+    <div class="quote-box bg-white shadow-lg rounded-lg p-6 max-w-md w-full text-gray-800">
+      <p id="quote" class="text-xl font-medium mb-4">Click the button to see a new quote!</p>
+      <p id="author" class="text-sm text-gray-500"></p>
+      <span id="favorite" class="favorite" onclick="toggleFavorite()">❤️</span>
+      <div class="mt-4">
+        <button onclick="generateQuote()" class="bg-gradient-to-r from-pink-500 to-purple-500 text-white py-2 px-4 rounded hover:from-pink-600 hover:to-purple-600 transition duration-300">New Quote</button>
+        <button id="copyButton" onclick="copyToClipboard()" class="ml-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white py-2 px-4 rounded hover:from-blue-600 hover:to-blue-700 transition duration-300">Copy</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="notification" class="hidden fixed top-0 right-0 m-4 p-4 bg-blue-500 text-white rounded shadow-lg">
+    <p id="notificationText"></p>
+  </div>
+
+  <script>
+    const quotes = [
+       { text: "Programming isn't about what you know; it's about what you can figure out." },
+  { text: "The best way to predict the future is to invent it." },
+  { text: "Simplicity is the soul of efficiency." },
+  { text: "In order to be irreplaceable, one must always be different." },
+  { text: "Talk is cheap. Show me the code." },
+  { text: "Code is like humor. When you have to explain it, it’s bad." },
+  { text: "First, solve the problem. Then, write the code." },
+  { text: "The only way to go fast is to go well." },
+  { text: "The computer is not a tool; it’s an extension of the human mind." },
+  { text: "Good code is its own best documentation." },
+  { text: "The most damaging phrase in the language is: 'We’ve always done it this way.'" },
+  { text: "Software is a great combination between artistry and engineering." },
+  { text: "It's not a bug; it's an undocumented feature." },
+  { text: "I think it's a great time to be a programmer." },
+  { text: "The best code is no code at all." },
+  { text: "To iterate is human, to recurse divine." },
+  { text: "There are only two kinds of languages: the ones people complain about and the ones nobody uses." },
+  { text: "Don't comment bad code—rewrite it." },
+  { text: "The hardest part of programming is understanding the problem." },
+  { text: "In programming, the hard part isn’t solving problems, but deciding what problems to solve." },
+  { text: "Programming is the art of writing a program that does what you think it does." },
+  { text: "Before software can be reusable, it first has to be usable." },
+  { text: "You can't write a program without a clear understanding of the problem." },
+  { text: "Life is too short to write bad code." },
+  { text: "Experience is the name everyone gives to their mistakes." },
+  { text: "Good programmers use their brains, but good guidelines save us having to think out every case." },
+  { text: "The function of good software is to make the complex appear simple." },
+  { text: "The best way to get a project done faster is to start sooner." },
+  { text: "A good programmer is someone who always looks both ways before crossing a one-way street." },
+  { text: "In the world of programming, simplicity is key." },
+  { text: "Sometimes it's better to leave things as they are." },
+  { text: "The difference between a developer and a user is that a developer can make a mistake that they can later fix." },
+  { text: "Any fool can write code that a computer can understand. Good programmers write code that humans can understand." },
+  { text: "Code should be written to be read by humans first and computers second." },
+  { text: "It's not just what you know, but how you think that makes you a good programmer." },
+  { text: "A programming language is like a car; it has features that make driving easier." },
+  { text: "Software development is a marathon, not a sprint." },
+  { text: "A user interface is like a joke. If you have to explain it, it's not that good." },
+  { text: "The purpose of software engineering is to control complexity, not to make complex things." },
+  { text: "Every great developer you know got there by solving problems they were unqualified to solve until they actually did it." },
+  { text: "The best programming is no programming." },
+  { text: "Programming is like sex: One mistake and you have to support it for the rest of your life." },
+  { text: "Good software is like good wine: it takes time to mature." },
+  { text: "You can't just add more developers to a late project." },
+  { text: "The first rule of programming is to never let your boss see your work." },
+  { text: "Quality means doing it right when no one is looking." },
+  { text: "The best part about programming is the community." },
+  { text: "Debugging is being the detective in a crime movie where you are also the murderer." },
+  { text: "A great programmer is not a person who knows everything, but someone who knows how to learn." },
+  { text: "The most effective debugging tool is still careful thought." },
+  { text: "Good software, like wine, takes time." },
+  { text: "Programming is not about what you know; it's about what you can figure out." },
+  { text: "The only limit to our realization of tomorrow will be our doubts of today." },
+  { text: "In programming, there are two kinds of people: those who have been fired, and those who will be." },
+  { text: "Every line of code is a line of thought." },
+  { text: "When debugging, novices insert corrective code; experts remove defective code." },
+  { text: "The best way to predict your future is to create it." },
+  { text: "You can't have great software without a great team." },
+  { text: "A code that is easy to read is a code that is easy to debug." },
+  { text: "In programming, it's not about how much you know; it's about how much you can learn." },
+  { text: "The greatest enemy of knowledge is not ignorance; it is the illusion of knowledge." },
+  { text: "When the code becomes difficult, it’s a sign you should refactor." },
+  { text: "Programs must be written for people to read, and only incidentally for machines to execute." },
+  { text: "Software is a living organism that constantly evolves." },
+  { text: "The best code is the code that is never written." },
+  { text: "Simplicity is the ultimate sophistication." },
+  { text: "A good programmer knows what to write; a great programmer knows what to rewrite." },
+  { text: "If debugging is the process of removing software bugs, then programming must be the process of putting them in." },
+  { text: "Simplicity is the soul of efficiency." },
+  { text: "Programming is like art; you can always get better at it." },
+  { text: "Keep it simple, stupid." },
+  { text: "It’s not a bug; it’s an undocumented feature." },
+  { text: "Good design adds value faster than it adds cost." },
+  { text: "You don't have to be a genius to program; you just need to be a good problem solver." },
+  { text: "The best part of programming is that you can solve your own problems." },
+  { text: "Code is like a relationship; it requires maintenance and care." },
+  { text: "You can’t fix what you don’t understand." },
+  { text: "The best code is the one that is never seen." },
+  { text: "What one programmer can do in one month, another programmer can do in a month." },
+  { text: "There's always one more bug." },
+  { text: "Don't write code that you don't understand." },
+  { text: "The code you write should be a reflection of your intentions." },
+  { text: "Debugging is like being a detective in a crime movie where you are also the murderer." },
+  { text: "A language that doesn't affect the way you think about programming is not worth knowing." },
+  { text: "Programmers are constantly in the process of problem-solving." },
+  { text: "The best code is the one that is the easiest to read." },
+  { text: "Every problem is a problem of communication." },
+  { text: "A good programmer is someone who thinks before they write." },
+  { text: "Programming is the art of algorithm design and the craft of debugging errant code." },
+  { text: "It’s easier to change the specification to fit the program than vice versa." },
+  { text: "The first step in solving any problem is recognizing there is one." },
+  { text: "In programming, the hard part isn't solving the problem; it's deciding what problems to solve." },
+  { text: "Programming is the ability to take an idea and turn it into a reality." },
+  { text: "The best developers are always learning." },
+  { text: "A programming language is a tool to help you solve problems." },
+  { text: "An algorithm must be seen to be believed." },
+  { text: "Programming is the best way to express your creativity." },
+  { text: "A programmer is someone who can take a problem, break it down into smaller parts, and solve it." },
+  { text: "The greatest challenge in programming is not making it work, but making it work elegantly." },
+  { text: "The programmer's greatest fear is not a bug but a feature." },
+  { text: "To succeed in programming, you must have a great amount of patience." },
+  { text: "The best software is built by teams that communicate effectively." },
+  { text: "Never underestimate the power of a small group of committed individuals." },
+  { text: "Good code is a work of art." },
+  { text: "The most powerful tools are not the ones that do everything, but the ones that do a few things well." },
+  { text: "The key to success is not in having all the answers but in asking the right questions." },
+  { text: "A great developer is not defined by the languages they know but by their ability to adapt." },
+  { text: "It takes a great deal of courage to stand up and speak; it takes even more courage to sit down and listen." },
+  { text: "Every line of code is a line of thought." },
+  { text: "A programmer is a creator, a thinker, and a problem solver." },
+  { text: "If you can't explain it simply, you don't understand it well enough." },
+  { text: "Good programmers are lazy." },
+  { text: "It’s not what you look at that matters; it’s what you see." },
+  { text: "The greatest enemy of knowledge is not ignorance; it is the illusion of knowledge." },
+  { text: "You are not just writing code; you are creating art." },
+  { text: "In the end, it's not about how much you know, but how much you care." },
+  { text: "The key to a successful program is to write clean code." },
+  { text: "A programmer's job is to make things work." },
+  { text: "A programming language is a means of communication between humans and computers." },
+  { text: "If you don't know how to debug, you don't know how to code." },
+  { text: "A good programmer is a curious programmer." },
+  { text: "Programming is not just a skill; it’s a mindset." },
+  { text: "A great programmer is always open to learning new things." },
+  { text: "Every bug is an opportunity to learn." },
+  { text: "You learn to program by programming." },
+  { text: "The code you write today will be the code you have to maintain tomorrow." },
+  { text: "In programming, the only constant is change." },
+  { text: "The best programmers are the ones who can solve problems creatively." },
+  { text: "The most important thing about communication is hearing what isn't said." },
+  { text: "Programming is a journey, not a destination." },
+  { text: "If you're not having fun, you're doing it wrong." },
+  { text: "A great programmer is someone who can find the simplest solution." },
+  { text: "There's always a better way to do things." },
+  { text: "To program is to think." },
+  { text: "The best code is the one that is easy to maintain." },
+  { text: "Code is poetry." },
+  { text: "The real test of a programmer's skills is their ability to write maintainable code." },
+  { text: "Code never lies, comments sometimes do." },
+  { text: "The best software is built with love." },
+  { text: "The goal of software engineering is to make the complex simple." },
+  { text: "To be a great programmer, you must embrace change." },
+  { text: "Good code is like a good story; it has a beginning, middle, and end." },
+  { text: "You can't have a good project without a good team." },
+  { text: "The secret of getting ahead is getting started." },
+  { text: "Coding is not just about writing code; it's about solving problems." },
+  { text: "A good programmer knows how to find the best solution." },
+  { text: "Programming is a way of thinking, not a way of doing." },
+  { text: "Every line of code tells a story." },
+  { text: "If you're not making mistakes, then you're not doing anything." },
+  { text: "The art of programming is the art of organizing complexity." },
+  { text: "In programming, as in life, the most important thing is to keep moving forward." },
+  { text: "Every problem has a solution." },
+  { text: "A great developer is not a genius; they are simply persistent." },
+  { text: "The best software is built by people who care." },
+  { text: "Programming is not just a job; it's a passion." },
+  { text: "To create great software, you must first create a great team." },
+  { text: "Programming is about problem-solving, not just coding." },
+  { text: "The best way to learn is to teach others." },
+  { text: "In programming, there is always more to learn." },
+  { text: "A programmer is someone who solves problems for a living." },
+  { text: "Good programmers are problem solvers." },
+  { text: "A great programmer is someone who is always willing to learn." },
+  { text: "Programming is not just about writing code; it's about making things happen." },
+  { text: "The best way to predict the future is to create it." },
+  { text: "A good programmer is always looking for ways to improve." },
+  { text: "In programming, as in life, it's not about the destination, it's about the journey." },
+  { text: "Every line of code is a step towards a solution." },
+  { text: "A good programmer knows how to find the right tools for the job." },
+  { text: "Programming is not just a skill; it's a mindset." },
+  { text: "The best programmers are the ones who can think outside the box." },
+  { text: "In programming, as in life, the best way to succeed is to keep trying." },
+  { text: "A programmer is someone who loves to solve problems." },
+  { text: "Good programming is about finding the right balance between complexity and simplicity." },
+  { text: "The greatest challenge in programming is not making it work, but making it work well." },
+  { text: "Every programmer should strive to be a better programmer." },
+  { text: "The key to success is not in having all the answers but in asking the right questions." },
+  { text: "Programming is the art of thinking logically." },
+  { text: "A good programmer is someone who can think critically." },
+  { text: "Programming is a skill that can be learned by anyone." },
+  { text: "In programming, the hardest part is figuring out what the problem is." },
+  { text: "Good programming is about finding the right balance between functionality and usability." },
+  { text: "The most important thing in programming is to keep learning." },
+  { text: "Programming is not just about writing code; it's about solving problems creatively." },
+  { text: "A good programmer is someone who is always looking for ways to improve their craft." },
+  { text: "In programming, as in life, the best way to succeed is to keep trying." },
+  { text: "The best way to learn programming is to start programming." },
+  { text: "A great programmer is someone who can see the big picture." },
+  { text: "Every programmer should strive to be a better programmer." },
+  { text: "In programming, the only constant is change." },
+  { text: "Good programming is about finding the right solution for the problem at hand." },
+  { text: "A programmer is someone who loves to solve problems creatively." },
+  { text: "Programming is a skill that requires practice." },
+  { text: "The key to success in programming is to keep learning." },
+  { text: "In programming, the most important thing is to keep moving forward." },
+  { text: "Every line of code is a step towards a solution." },
+  { text: "A good programmer knows how to find the right tools for the job." },
+  { text: "Programming is not just a job; it's a passion." },
+  { text: "The best software is built by people who care." },
+  { text: "To create great software, you must first create a great team." },
+  { text: "Programming is about problem-solving, not just coding." },
+  { text: "The best way to learn is to teach others." },
+  { text: "In programming, there is always more to learn." },
+  { text: "A programmer is someone who solves problems for a living." },
+  { text: "Good programmers are problem solvers." },
+  { text: "A great programmer is someone who is always willing to learn." },
+  { text: "Programming is not just about writing code; it's about making things happen." },
+  { text: "The best way to predict your future is to create it." },
+  { text: "A good programmer is always looking for ways to improve." },
+  { text: "In programming, as in life, it's not about the destination, it's about the journey." },
+  { text: "Every line of code is a step towards a solution." },
+  { text: "A good programmer knows how to find the right tools for the job." },
+  { text: "Programming is not just a skill; it's a mindset." },
+  { text: "The best programmers are the ones who can think outside the box." },
+  { text: "In programming, as in life, the best way to succeed is to keep trying." },
+  { text: "A programmer is someone who loves to solve problems." },
+  { text: "Good programming is about finding the right balance between complexity and simplicity." },
+  { text: "The greatest challenge in programming is not making it work, but making it work well." },
+  { text: "Every programmer should strive to be a better programmer." },
+  { text: "The key to success is not in having all the answers but in asking the right questions." },
+  { text: "Programming is the art of thinking logically." },
+  { text: "A good programmer is someone who can think critically." },
+  { text: "Programming is a skill that can be learned by anyone." },
+  { text: "In programming, the hardest part is figuring out what the problem."},
+      { text: "In programming, as in life, the best way to succeed is to keep trying." },
+  { text: "A programmer is someone who loves to solve problems." },
+  { text: "Good programming is about finding the right balance between complexity and simplicity." },
+  { text: "The greatest challenge in programming is not making it work, but making it work well." },
+  { text: "Every programmer should strive to be a better programmer." },
+  { text: "The key to success is not in having all the answers but in asking the right questions." },
+  { text: "Programming is the art of thinking logically." },
+  { text: "A good programmer is someone who can think critically." },
+  { text: "Programming is a skill that can be learned by anyone." },
+  { text: "In programming, the hardest part is figuring out what the problem is." },
+  { text: "Good programming is about finding the right balance between functionality and usability." },
+  { text: "The most important thing in programming is to keep learning." },
+  { text: "Programming is not just about writing code; it's about solving problems creatively." },
+  { text: "A good programmer is someone who is always looking for ways to improve their craft." },
+  { text: "In programming, as in life, the best way to succeed is to keep trying." },
+  { text: "The best way to learn programming is to start programming." },
+  { text: "A great programmer is someone who can see the big picture." },
+  { text: "Every programmer should strive to be a better programmer." },
+  { text: "In programming, the only constant is change." },
+  { text: "Good programming is about finding the right solution for the problem at hand." },
+  { text: "A programmer is someone who loves to solve problems creatively." },
+  { text: "Programming is a skill that requires practice." },
+  { text: "The key to success in programming is to keep learning." },
+  { text: "In programming, the most important thing is to keep moving forward." },
+  { text: "Every line of code is a step towards a solution." },
+  { text: "A good programmer knows how to find the right tools for the job." },
+  { text: "Programming is not just a job; it's a passion." },
+  { text: "The best software is built by people who care." },
+  { text: "To create great software, you must first create a great team." },
+  { text: "Programming is about problem-solving, not just coding." },
+  { text: "The best way to learn is to teach others." },
+  { text: "In programming, there is always more to learn." },
+  { text: "A programmer is someone who solves problems for a living." },
+  { text: "Good programmers are problem solvers." },
+  { text: "A great programmer is someone who is always willing to learn." },
+  { text: "Programming is not just about writing code; it's about making things happen." },
+  { text: "The best way to predict your future is to create it." },
+  { text: "A good programmer is always looking for ways to improve." },
+  { text: "In programming, as in life, it's not about the destination, it's about the journey." },
+  { text: "Every line of code is a step towards a solution." },
+  { text: "A good programmer knows how to find the right tools for the job." },
+  { text: "Programming is not just a skill; it's a mindset." },
+  { text: "The best programmers are the ones who can think outside the box." },
+  { text: "In programming, as in life, the best way to succeed is to keep trying." },
+  { text: "A programmer is someone who loves to solve problems." },
+  { text: "Good programming is about finding the right balance between complexity and simplicity." },
+  { text: "The greatest challenge in programming is not making it work, but making it work well." },
+      { text: "Code is like humor. When you have to explain it, it’s bad.", author: "Cory House" },
+      { text: "First, solve the problem. Then, write the code.", author: "John Johnson" },
+      { text: "Experience is the name everyone gives to their mistakes.", author: "Oscar Wilde" },
+      { text: "In order to be irreplaceable, one must always be different.", author: "Coco Chanel" },
+      { text: "Java is to JavaScript what car is to Carpet.", author: "Chris Heilmann" },
+      { text: "Knowledge is power.", author: "Francis Bacon" },
+      { text: "Sometimes it pays to stay in bed on Monday, rather than spending the rest of the week debugging Monday’s code.", author: "Dan Salomon" },
+      { text: "Code never lies, comments sometimes do.", author: "Ron Jeffries" },
+      { text: "Fix the cause, not the symptom.", author: "Steve Maguire" },
+      { text: "Optimism is an occupational hazard of programming: feedback is the treatment.", author: "Kent Beck" },
+      { text: "Simplicity is the soul of efficiency.", author: "Austin Freeman" },
+      { text: "Before software can be reusable it first has to be usable.", author: "Ralph Johnson" },
+      { text: "Make it work, make it right, make it fast.", author: "Kent Beck" },
+      { text: "The only way to learn a new programming language is by writing programs in it.", author: "Dennis Ritchie" },
+      { text: "Sometimes it’s better to leave something alone, to pause, and that’s very true of programming.", author: "Joyce Wheeler" },
+      { text: "Good code is its own best documentation.", author: "Steve McConnell" },
+      { text: "Testing leads to failure, and failure leads to understanding.", author: "Burt Rutan" },
+      { text: "The best error message is the one that never shows up.", author: "Thomas Fuchs" },
+      { text: "Deleted code is debugged code.", author: "Jeff Sickel" },
+      { text: "The function of good software is to make the complex appear to be simple.", author: "Grady Booch" },
+    ];
+
+    let currentQuoteIndex = 0;
+
+
+    window.onload = function () {
+      setTimeout(() => {
+        document.getElementById('loadingScreen').classList.add('hidden');
+        document.getElementById('welcomeScreen').classList.remove('hidden');
+        generateQuote(); // Generate a quote on page load
+      },5000);
+    };
+
+
+    function hideWelcomeScreen() {
+      document.getElementById('welcomeScreen').classList.add('hidden');
+      document.getElementById('quoteScreen').classList.remove('hidden');
+    }
+
+
+    function generateQuote() {
+      const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+      document.getElementById("quote").innerText = `"${randomQuote.text}"`;
+      document.getElementById("author").innerText = randomQuote.author ? `- ${randomQuote.author}` : "- Unknown";
+      currentQuoteIndex = quotes.indexOf(randomQuote);
+      showNotification(`New quote generated!`);
+      
+      // Add transition effect
+      const quoteBox = document.querySelector('.quote-box');
+      quoteBox.style.opacity = 0;
+      setTimeout(() => {
+        quoteBox.style.opacity = 1;
+      }, 500);
+    }
+
+
+    function showNotification(message) {
+      const notification = document.getElementById('notification');
+      const notificationText = document.getElementById('notificationText');
+      notificationText.innerText = message;
+      notification.classList.remove('hidden');
+      setTimeout(() => {
+        notification.classList.add('hidden');
+      }, 3000);
+    }
+
+
+    function toggleFavorite() {
+      const favoriteIcon = document.getElementById('favorite');
+      favoriteIcon.classList.toggle('active');
+    }
+
+    function copyToClipboard() {
+      const quoteText = document.getElementById("quote").innerText;
+      navigator.clipboard.writeText(quoteText).then(() => {
+        showNotification('Quote copied to clipboard!');
+      });
+                 }
